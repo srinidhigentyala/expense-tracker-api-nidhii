@@ -33,3 +33,10 @@ def create_expense(expense : Expenses,db : Session = Depends(get_db)):
         "message" : "Expense recorded",
         "expense" : new_expense
     }
+
+# GET - List all expenses
+@app.get("/expenses")
+def get_expenses(db : Session = Depends(get_db)):
+    expenses = db.query(models.Expense).all()
+    db.close()
+    return expenses
