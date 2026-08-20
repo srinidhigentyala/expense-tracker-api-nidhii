@@ -40,3 +40,14 @@ def get_expenses(db : Session = Depends(get_db)):
     expenses = db.query(models.Expense).all()
     db.close()
     return expenses
+
+# GET - Get one expense by Id (404 if not found)
+@app.get("/expenses/{expense_id}")
+def get_expense(expense_id :int, db : Session = Depends(get_db)):
+    expense = db.query(models.Expense).filter(models.Expense.id == expense_id).first()
+    if not expense :
+        raise HTTPException (
+            status_code = 404,
+            detail = "Id not found"
+        )
+    return expense
