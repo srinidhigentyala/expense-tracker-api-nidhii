@@ -1,0 +1,35 @@
+from fastapi import FastAPI, HTTPException,Depends
+from sqlalchemy.orm import Session
+import models
+from schemas import Expenses
+from database import engine, SessionLocal
+
+app = FastAPI()
+
+models.Base.metadata.create_all(bind=engine)
+
+def get_db() :
+    try :
+        db = SessionLocal()
+        yield db
+    finally :
+        db.close()
+
+
+# POST - Create Task 
+@app.post("/expenses")
+def create_expense(expense : Expenses,db : Session = Depends(get_db)):
+    new_expense = models.Expense(
+        title=expense.title,
+        amount=expense.amount,
+        category=expense.category,
+        date=expense.date
+    )
+    db.add(new_expense)
+    db.commit()
+    db.refresh(new_expense)
+    return {
+        "id" : new_expense.id,
+        "message" : "Expense recorded",
+        "expense" : new_expense
+    }

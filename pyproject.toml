@@ -1,0 +1,21 @@
+[project]
+name = "expense-tracker-api-nidhii"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Srinidhi Gentyala", email = "srinidhigentyala19@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.141.1",
+    "sqlalchemy>=2.0.52",
+    "uvicorn>=0.52.4",
+]
+
+[project.scripts]
+expense-tracker-api-nidhii = "expense_tracker_api_nidhii:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
