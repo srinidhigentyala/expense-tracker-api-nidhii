@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException,Depends
 from sqlalchemy.orm import Session
 import models
-from schemas import ExpenseCreate, UpdateExpense
+from schemas import ExpenseCreate, UpdateExpense,BudgetCreate
 from database import engine, SessionLocal
 
 app = FastAPI(title= "Personal Expense Tracker API")
@@ -38,6 +38,11 @@ def create_expense(expense : ExpenseCreate,db : Session = Depends(get_db)):
 @app.get("/expenses")
 def get_expenses(db : Session = Depends(get_db)):
     expenses = db.query(models.Expense).all()
+    if expenses is None :
+        raise HTTPException (
+            status_code =404,
+            detail = "No Expenses Found"
+        )
     db.close()
     return expenses
 
@@ -90,7 +95,7 @@ def delete_expense(expense_id : int,db : Session = Depends(get_db)):
     }
 
 # GET - get all expenses by category
-@app.get("/expenses/category/{category_id}")
+@app.get("/expenses/category/{category}")
 def get_all_expenses(category : str, db:Session = Depends(get_db)):
     expense = db.query(models.Expense).filter(models.Expense.category == category).all()
     if not expense :
@@ -100,3 +105,33 @@ def get_all_expenses(category : str, db:Session = Depends(get_db)):
         )
     db.close()
     return expense
+
+# GET - get all expenses on given date
+@app.get("/expenses/date/{date}")
+def get_all_expenses_by_date(date : str, db : Session = Depends(get_db)):
+    expense = db.query(models.Expense).filter(models.Expense.date == date).all()
+    if not expense :
+        raise HTTPException (
+            status_code = 404,
+            detail = "Invalid date or Expenses not available with this date"
+        )
+    db.close()
+    return expense
+
+# POST - set a monthly budget
+@app.post("/budget")
+def monthly_budget(budget:BudgetCreate, db:Session = Depends(get_db)):
+    new_budget = models.Budget(
+        budget_amount = budget.budget_amount,
+        total_spent = budget.total_spent,
+        remaining_amt = budget.remaining_amt,
+        month = budget.month
+    )
+    db.add(new_budget)
+    db.commit()
+    db.refresh(new_budget)
+    return {
+        "id" : new_budget.id,
+        "message" : "Budget_Added",
+        "budget" : new_budget
+    }
