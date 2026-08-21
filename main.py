@@ -88,3 +88,15 @@ def delete_expense(expense_id : int,db : Session = Depends(get_db)):
     return {
         "message" : f"Expense with id, {expense_id} is deleted successfully"
     }
+
+# GET - get all expenses by category
+@app.get("/expenses/category/{category_id}")
+def get_all_expenses(category : str, db:Session = Depends(get_db)):
+    expense = db.query(models.Expense).filter(models.Expense.category == category).all()
+    if not expense :
+        raise HTTPException(
+            status_code = 404,
+            detail = "Expenses not available with this category"
+        )
+    db.close()
+    return expense
