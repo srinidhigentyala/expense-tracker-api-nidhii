@@ -135,3 +135,45 @@ def monthly_budget(budget:BudgetCreate, db:Session = Depends(get_db)):
         "message" : "Budget_Added",
         "budget" : new_budget
     }
+
+"""
+# GET - return budget status
+@app.get("/budget/status")
+def budget_status(budget:BudgetCreate,db:Session = Depends(get_db)):
+    budget = db.query(models.Budget).all()
+    if budget is None :
+        raise HTTPException(
+            status_code = 404,
+            detail = "No budget provided"
+        )
+    if total_spent > budget.amt :
+        return "Warning! Spent more than Budget"
+    return budget
+"""
+# GET - get budget status
+@app.get("/budget/status")
+def budget_status(db: Session = Depends(get_db)):
+    budgets = db.query(models.Budget).all()
+    if not budgets:
+        raise HTTPException(
+            status_code=404, 
+            detail="No budget provided"
+        )
+    
+    results = []
+    for budget in budgets:
+        if budget.total_spent > budget.budget_amount:
+            results.append(
+            {
+                "month": budget.month,
+                "warning": "Spent more than Budget"
+            }
+            )
+        else:
+            results.append(
+                {
+                    "month": budget.month,
+                    "status": "OK"
+                }
+            )
+    return results
